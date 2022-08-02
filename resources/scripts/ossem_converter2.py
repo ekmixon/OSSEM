@@ -235,14 +235,14 @@ for relationship_file in relationships_files:
         attack_relationships_files.append(relationship_yaml)
 
 # Creating ATT&CK data sources to event mappings readme file
-print(f"[+] Creating ATT&CK data sources to event mappings readme file..")
+print("[+] Creating ATT&CK data sources to event mappings readme file..")
 data_sources_event_mappings_template = Template(open('templates/attack_ds_event_mappings.md').read())
 data_sources_event_mappings_render = copy.deepcopy(attack_relationships_files)
 data_sources_event_mappings_markdown = data_sources_event_mappings_template.render(ds_event_mappings=data_sources_event_mappings_render)
 open('../../docs/dm/mitre_attack/attack_ds_events_mappings.md', 'w').write(data_sources_event_mappings_markdown)
 
 # Creating OSSEM relationships to events readme file
-print(f"[+] Creating OSSEM relationships to events readme file..")
+print("[+] Creating OSSEM relationships to events readme file..")
 ossem_event_mappings_template = Template(open('templates/ossem_relationships_to_events.md').read())
 ossem_event_mappings_render = copy.deepcopy(all_relationships_files)
 ossem_event_mappings_markdown = ossem_event_mappings_template.render(ds_event_mappings=ossem_event_mappings_render)

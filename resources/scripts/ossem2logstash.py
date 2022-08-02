@@ -11,7 +11,10 @@ import json
 import glob
 from os import path
 
-print("[+] Processing files inside {} directory".format('../../source/data_dictionaries/windows/sysmon/events'))
+print(
+    '[+] Processing files inside ../../source/data_dictionaries/windows/sysmon/events directory'
+)
+
 
 # ******** Open every event yaml file available ****************
 print("[+] Opening Sysmon Events Yaml files..")

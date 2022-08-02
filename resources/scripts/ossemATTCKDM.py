@@ -10,7 +10,10 @@ from os import path
 import copy
 from jinja2 import Template
 
-print("[+] Processing files inside {} directory".format('../../attack_data_sources/event-mappings'))
+print(
+    '[+] Processing files inside ../../attack_data_sources/event-mappings directory'
+)
+
 
 # ******** Open every ATT&CK data source YAML ****************
 print("[+] Opening ATT&CK YAML files..")

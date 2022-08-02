@@ -70,22 +70,14 @@ all_sysmon = []
 # ******** Iterating over Sysmon Events ****************
 log.info('Iterating over Sysmon events')
 for item in eventlist:
-    log.info('Processing Event: {} - {}'.format(item['name'],item['value']))
-    sysmon_event = dict()
-    sysmon_event['name'] = item['name']
-    sysmon_event['id'] = item['value']
-    sysmon_event['events'] = []
-
+    log.info(f"Processing Event: {item['name']} - {item['value']}")
+    sysmon_event = {'name': item['name'], 'id': item['value'], 'events': []}
     fieldlist = item.data
-    count = 0
     log.info('Iterating over event field names')
-    for field in fieldlist:
-        log.debug('Field Name: {}'.format(field['name']))
-        field_name = dict()
-        field_name['name'] = field['name']
-        field_name['index'] = count
+    for count, field in enumerate(fieldlist):
+        log.debug(f"Field Name: {field['name']}")
+        field_name = {'name': field['name'], 'index': count}
         sysmon_event['events'].append(field_name)
-        count += 1
     all_sysmon.append(sysmon_event)
 
 # ******** Unique List of Events ****************
@@ -106,5 +98,5 @@ sysmon_for_render = copy.deepcopy(all_sysmon)
 parser = kql_parser_template.render(sysmon=sysmon_for_render, uniquesysmon=unique_fields, today=date.today(), sysmonversion=sysmon_version, schemaversion=sysmon_manifest['schemaversion'], binaryversion=sysmon_manifest['binaryversion'])
 
 # ******** Creating File ****************
-log.info('Creating Parser in: {}'.format(output_file_path))
+log.info(f'Creating Parser in: {output_file_path}')
 open(f'{output_file_path}/SysmonKQLParserV{sysmon_version}.txt', 'w').write(parser)

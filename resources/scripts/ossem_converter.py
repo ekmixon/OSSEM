@@ -26,10 +26,7 @@ class ossemParser():
         self.ds_list_indexes = []
 
     def remove_new_lines(self, text):
-        if text:
-            return text.replace('\n',' ')
-        else:
-            return text
+        return text.replace('\n',' ') if text else text
 
     def read_yml(self, context, root_path, file_path):
         """ read a yaml file and return dict """
@@ -43,7 +40,7 @@ class ossemParser():
             return None
 
         if not yml_file:
-            print('[!] Failed parsing {}'.format(file_path))
+            print(f'[!] Failed parsing {file_path}')
             return None
         else:
             yml_file['rootpath'] = '/'.join(rootpath)
@@ -67,51 +64,44 @@ class ossemParser():
                 #parse yaml event files
                 if name.endswith('.yml') and 'README' not in name:
                     if cim in path and name not in self.cim_ignore:
-                        yml_data = self.read_yml(cim, path, filepath)
-                        if yml_data:
-                            if len(yml_data['data_fields']) == 0 or \
-                                yml_data['title'] == None or \
-                                yml_data['description'] == None:
-                                print('[!] Skipping {} because entity is incomplete'.format(filepath))
+                        if yml_data := self.read_yml(cim, path, filepath):
+                            if (
+                                len(yml_data['data_fields']) == 0
+                                or yml_data['title'] is None
+                                or yml_data['description'] is None
+                            ):
+                                print(f'[!] Skipping {filepath} because entity is incomplete')
                                 self.ignored_paths.append(filepath)
                             else:
                                 self.cim_entities.append(yml_data)
 
                     elif dd in path:
-                        yml_data = self.read_yml(dd, path, filepath)
-                        if yml_data:
+                        if yml_data := self.read_yml(dd, path, filepath):
                             self.data_dictionaries.append(yml_data)
 
                     elif ddm in path:
-                        yml_data = self.read_yml(ddm, path, filepath)
-                        if yml_data:
+                        if yml_data := self.read_yml(ddm, path, filepath):
                             self.ddm_list.append(yml_data)
 
                     elif ds in path:
-                        yml_data = self.read_yml(ds, path, filepath)
-                        if yml_data:
+                        if yml_data := self.read_yml(ds, path, filepath):
                             self.ds_list.append(yml_data)
 
-                #parse yaml index files
                 elif name == 'README.yml':
                     if cim in path:
-                        yml_data = self.read_yml(cim, path, filepath)
-                        if yml_data:
+                        if yml_data := self.read_yml(cim, path, filepath):
                             self.cim_entities_indexes.append(yml_data)
 
                     elif dd in path:
-                        yml_data = self.read_yml(dd, path, filepath)
-                        if yml_data:
+                        if yml_data := self.read_yml(dd, path, filepath):
                             self.data_dictionaries_indexes.append(yml_data)
 
                     elif ddm in path:
-                        yml_data = self.read_yml(ddm, path, filepath)
-                        if yml_data:
+                        if yml_data := self.read_yml(ddm, path, filepath):
                             self.ddm_list_indexes.append(yml_data)
 
                     elif ds in path:
-                        yml_data = self.read_yml(ds, path, filepath)
-                        if yml_data:
+                        if yml_data := self.read_yml(ds, path, filepath):
                             self.ds_list_indexes.append(yml_data)
 
     def write_yml(self, root, filename, entry):
@@ -130,17 +120,16 @@ class ossemParser():
         entry.pop('filepath')
         entry.pop('filename')
 
-        dd_yaml_file = open(filepath, 'w')
-        dd_yaml_file.write(yaml.dump(entry, sort_keys=False))
-        dd_yaml_file.close()
-        print('[*] Created {}'.format(filepath))
+        with open(filepath, 'w') as dd_yaml_file:
+            dd_yaml_file.write(yaml.dump(entry, sort_keys=False))
+        print(f'[*] Created {filepath}')
 
     def export_to_yaml(self, root):
         """ generates a yaml version of OSSEM data """
 
         #generate data dictionary event yaml
         for entry in self.data_dictionaries:
-            filename = '{}.yml'.format(entry['filename'])
+            filename = f"{entry['filename']}.yml"
             self.write_yml(root, filename, entry)
 
         #generate data dictionary index yaml
@@ -150,7 +139,7 @@ class ossemParser():
 
         #generate cim entities yaml
         for entry in self.cim_entities:
-            filename = '{}.yml'.format(entry['filename'])
+            filename = f"{entry['filename']}.yml"
             self.write_yml(root, filename, entry)
 
         #generate cim entities index yaml
@@ -160,7 +149,7 @@ class ossemParser():
 
         #generate ddm tables yaml
         for entry in self.ddm_list:
-            filename = '{}.yml'.format(entry['filename'])
+            filename = f"{entry['filename']}.yml"
             self.write_yml(root, filename, entry)
 
         #generate ddm tables index yaml
@@ -170,12 +159,12 @@ class ossemParser():
 
         #generate ds tables yaml
         for entry in self.ds_list:
-            filename = '{}.yml'.format(entry['filename'])
+            filename = f"{entry['filename']}.yml"
             self.write_yml(root, filename, entry)
 
+        filename = 'README.yml'
         #generate ds tables index yaml
         for entry in self.ds_list_indexes:
-            filename = 'README.yml'
             self.write_yml(root, filename, entry)
 
         return True
@@ -209,33 +198,47 @@ class ossemParser():
                                     continue
 
                                 try:
-                                    readme = yaml.load(open(event_file_path, 'r'), Loader=yaml.Loader)
-                                    if readme:
-                                        sub_data_sets.append({
-                                            'title': readme['event_code'] if 'event_code' in readme else readme['title'],
-                                            'link': '{}/{}.md'.format(item, event.split('.')[0]),
-                                            'description': self.remove_new_lines(readme['description']),
-                                            'tags': readme['tags'],
-                                            'version': readme['event_version']})
+                                    if readme := yaml.load(
+                                        open(event_file_path, 'r'),
+                                        Loader=yaml.Loader,
+                                    ):
+                                        sub_data_sets.append(
+                                            {
+                                                'title': readme['event_code']
+                                                if 'event_code' in readme
+                                                else readme['title'],
+                                                'link': f"{item}/{event.split('.')[0]}.md",
+                                                'description': self.remove_new_lines(
+                                                    readme['description']
+                                                ),
+                                                'tags': readme['tags'],
+                                                'version': readme['event_version'],
+                                            }
+                                        )
+
                                 except Exception as e:
                                     print('[!] Failed parsing', event_file_path)
 
-                    #indexes pointing to other indexes
                     else:
                         entry['data_set_type'] = 'Data Set'
                         index_root_path = os.path.join(root_path, entry['filepath'], item, 'readme.yml')
-                        readme = yaml.load(open(index_root_path, 'r'), Loader=yaml.Loader)
-                        if readme:
+                        if readme := yaml.load(
+                            open(index_root_path, 'r'), Loader=yaml.Loader
+                        ):
                             if readme['description']:
-                                desc = '{}.'.format(readme['description'].split('.')[0])
+                                desc = f"{readme['description'].split('.')[0]}."
                             else:
                                 desc = readme['description']
-                            sub_data_sets.append({
-                                'title': readme['title'],
-                                'link': '{}/'.format(item),
-                                'description': desc})
+                            sub_data_sets.append(
+                                {
+                                    'title': readme['title'],
+                                    'link': f'{item}/',
+                                    'description': desc,
+                                }
+                            )
+
         else:
-            filename = '{}.md'.format(entry['filename'])
+            filename = f"{entry['filename']}.md"
             md_file_path = os.path.join(md_path, filename)
 
         entry['sub_data_sets'] = sub_data_sets
@@ -243,7 +246,7 @@ class ossemParser():
         with open(md_file_path, 'w') as md:
             md.write(template.render(entry=entry))
 
-        print('[*] Created {}'.format(md_file_path))
+        print(f'[*] Created {md_file_path}')
 
     def export_to_markdown(self, root):
         env = Environment(loader=FileSystemLoader('templates/'))
@@ -304,10 +307,10 @@ if __name__ == "__main__":
         print('[!] You forgot to select an output. Check the available output arguments with --help.')
 
     if args.to_md:
-        if not args.from_yml:
-            print('[!] You can only export to Markdown from YAML')
-        else:
+        if args.from_yml:
             print('[*] Parsing OSSEM from YAML')
             ossem.parse_yaml(args.from_yml)
             print('[*] Exporting OSSEM to Markdown')
             ossem.export_to_markdown(args.to_md)
+        else:
+            print('[!] You can only export to Markdown from YAML')
